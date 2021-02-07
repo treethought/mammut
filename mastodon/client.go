@@ -72,3 +72,11 @@ func (c Client) Unlike(status *ma.Status) *ma.Status {
 	return status
 
 }
+
+func (c Client) IsOwnStatus(status *ma.Status) bool {
+	return status.Account.ID == c.account.ID
+}
+
+func (c Client) Delete(status *ma.Status) {
+	c.m.DeleteStatus(context.TODO(), status.ID)
+}

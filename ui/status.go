@@ -2,8 +2,10 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/kyokomi/emoji/v2"
 	"github.com/mattn/go-mastodon"
 	"gitlab.com/tslocum/cview"
 )
@@ -41,15 +43,15 @@ func NewStatusModal(app *App, status *mastodon.Status) *StatusModal {
 
 type StatusFrame struct {
 	*cview.Frame
-	status *mastodon.Status
-	app    *App
+	toot *Toot
+	app  *App
 }
 
 func NewStatusFrame(app *App) *StatusFrame {
 
 	frame := cview.NewFrame(cview.NewBox())
 	frame.SetBackgroundColor(tcell.ColorDefault)
-	frame.SetBorders(2, 2, 2, 2, 4, 4)
+	frame.SetBorders(2, 2, 3, 3, 4, 4)
 	frame.SetBorder(true)
 	f := &StatusFrame{
 		Frame: frame,
@@ -60,11 +62,12 @@ func NewStatusFrame(app *App) *StatusFrame {
 
 }
 
-func (f *StatusFrame) SetStatus(status *mastodon.Status) {
+func (f *StatusFrame) SetStatus(toot *Toot) {
 	f.Clear()
 	f.SetBackgroundColor(tcell.ColorDefault)
 
-	f.status = status
+	f.toot = toot
+	status := toot.status
 
 	content := formatContent(status.Content)
 
@@ -74,22 +77,35 @@ func (f *StatusFrame) SetStatus(status *mastodon.Status) {
 
 	f.Frame = cview.NewFrame(text)
 
-	if f.status == nil {
+	if f.toot == nil {
 		return
 	}
 
 	ct := status.CreatedAt
 
-	created := fmt.Sprintf("%d-%02d-%02dT%02d",
-		ct.Year(), ct.Month(), ct.Day(),
-		ct.Hour(), ct.Minute())
+	created := fmt.Sprintf("%02d:%02d %d-%02d-%02d",
+		ct.Hour(), ct.Minute(),
+		ct.Year(), ct.Month(), ct.Day())
+
+	// replies := emoji.Sprintf("balloon", status.RepliesCount)
+
+	replies := emoji.Sprintf(":speech_balloon: %d", status.RepliesCount)
+	boosts := emoji.Sprintf(":repeat_button: %d", status.ReblogsCount)
+	// likes := emoji.Sprintf(":heart: %d", status.FavouritesCount)
+
+	likes := ""
+	if toot.IsFavorite() {
+		likes += emoji.Sprintf(":heart: %d", status.FavouritesCount)
+	} else {
+		likes += emoji.Sprintf(":white_heart: %d", status.FavouritesCount)
+	}
+
+	info := strings.Join([]string{replies, boosts, likes}, " | ")
 
 	f.AddText(status.Account.DisplayName, true, cview.AlignLeft, tcell.ColorWhite)
 	f.AddText(status.Account.Acct, true, cview.AlignCenter, tcell.ColorWhite)
 	f.AddText(status.Account.Username, true, cview.AlignRight, tcell.ColorWhite)
 	f.AddText(created, true, cview.AlignCenter, tcell.ColorWhite)
-	f.AddText(content, false, cview.AlignLeft, tcell.ColorWhite)
-	f.AddText("Footer middle", false, cview.AlignCenter, tcell.ColorGreen)
-	f.AddText("Footer second middle", false, cview.AlignCenter, tcell.ColorGreen)
+	f.AddText(info, false, cview.AlignCenter, tcell.ColorWhite)
 
 }

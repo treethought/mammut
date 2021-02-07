@@ -28,10 +28,8 @@ func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
 	t.SetInputCapture(t.HandleInput)
 
 	t.SetChangedFunc(func(index int, item *cview.ListItem) {
-
 		toot := t.GetCurrentToot()
-		app.SetStatus(toot.status)
-
+		app.SetStatus(toot)
 	})
 
 	t.fillToots(toots)

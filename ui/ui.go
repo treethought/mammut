@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/mattn/go-mastodon"
 	ma "github.com/treethought/masto/mastodon"
 	"gitlab.com/tslocum/cview"
 )
@@ -41,11 +40,9 @@ func (app *App) FocusTimeline() {
 	})
 }
 
-func (app *App) SetStatus(status *mastodon.Status) {
+func (app *App) SetStatus(toot *Toot) {
 	if app.statusView != nil {
-		app.statusView.Clear()
-		app.statusView.AddText(status.Account.DisplayName, true, cview.AlignCenter, tcell.ColorAliceBlue)
-		app.statusView.SetStatus(status)
+		app.statusView.SetStatus(toot)
 
 	}
 
@@ -83,7 +80,8 @@ func (app *App) Start() {
 	app.timeline = NewTimeline(app, toots)
 
 	leftpanel := cview.NewBox()
-	// leftpanel.SetBackgroundColor(tcell.ColorDefault)
+	leftpanel.SetBackgroundColor(tcell.ColorDefault)
+	//
 
 	app.statusView = NewStatusFrame(app)
 
@@ -93,15 +91,15 @@ func (app *App) Start() {
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(app.timeline, 0, 3, true)
-	mid.AddItem(app.statusView, 0, 3, false)
+	mid.AddItem(app.statusView, 0, 2, false)
 	mid.AddItem(app.info, 2, 1, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
-	flex.AddItem(leftpanel, 0, 1, false)
+	// flex.AddItem(leftpanel, 0, 2, false)
 	flex.AddItem(mid, 0, 3, false)
-	flex.AddItem(nil, 0, 1, false)
+	// flex.AddItem(leftpanel, 0, 1, false)
 
 	// flex.AddItem(app.info, 0, 1, false)
 
