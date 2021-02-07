@@ -9,7 +9,8 @@ import (
 )
 
 type Client struct {
-	m *ma.Client
+	m       *ma.Client
+	account *ma.Account
 }
 
 func NewClient() Client {
@@ -26,12 +27,18 @@ func NewClient() Client {
 		log.Fatal(err)
 	}
 
-	return Client{m: c}
+	account, err := c.GetAccountCurrentUser(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return Client{m: c, account: account}
 
 }
 
 func (c Client) GetTimeline() []*ma.Status {
-	timeline, err := c.m.GetTimelineHome(context.Background(), nil)
+	pg := &ma.Pagination{Limit: 60}
+	timeline, err := c.m.GetTimelineHome(context.Background(), pg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +51,23 @@ func (c Client) Toot(content string) *ma.Status {
 	}
 	status, err := c.m.PostStatus(context.TODO(), toot)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+	return status
+}
+
+func (c Client) Like(status *ma.Status) *ma.Status {
+	status, err := c.m.Favourite(context.TODO(), status.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return status
+}
+
+func (c Client) Unlike(status *ma.Status) *ma.Status {
+	status, err := c.m.Unfavourite(context.TODO(), status.ID)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return status
 

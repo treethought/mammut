@@ -20,42 +20,61 @@ func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
 	}
 	t.SetTitle("Timeline")
 	t.SetBorder(true)
+	t.SetBackgroundColor(tcell.ColorDefault)
 	t.SetMainTextColor(tcell.ColorLightCyan)
 	t.SetSecondaryTextColor(tcell.ColorNavajoWhite)
 	t.SetSelectedBackgroundColor(tcell.ColorIndianRed)
 	t.SetInputCapture(t.HandleInput)
 
-	for _, toot := range t.Toots {
-		tc := NewToot(toot)
-		t.AddItem(tc.ListItem)
-
-	}
+	t.fillToots(toots)
 	return t
+
+}
+
+func (t *Timeline) fillToots(toots []*mastodon.Status) {
+	t.Clear()
+	t.Toots = toots
+	for _, toot := range t.Toots {
+		tc := NewToot(t.app, toot)
+		t.AddItem(tc.ListItem)
+	}
 
 }
 
 func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 
+	ref := t.GetCurrentItem().GetReference()
+	toot, ok := ref.(*Toot)
+	if !ok {
+		return nil
+	}
+	status := toot.status
+
 	key := event.Key()
 	switch key {
 	case tcell.KeyEnter:
 
-		ref := t.GetCurrentItem().GetReference()
-		toot, ok := ref.(*mastodon.Status)
-		if !ok {
-			return nil
-		}
-
-		m := NewStatusModal(t.app, toot)
+		m := NewStatusModal(t.app, toot.status)
 		t.app.ui.SetRoot(m, true)
 
 		return nil
 
 	case tcell.KeyRune:
 		switch event.Rune() {
-		case 't': // Home.
+		case 't': // Toot
 			m := NewComposeModal(t.app)
 			t.app.ui.SetRoot(m, true)
+
+		case 'r': // Refresh
+			t.app.FocusTimeline()
+
+		case 'l': // Like
+			if toot.IsFavorite() {
+				t.app.client.Unlike(status)
+			} else {
+				t.app.client.Like(status)
+			}
+			t.app.FocusTimeline()
 
 			return nil
 		case 'g': // Home.

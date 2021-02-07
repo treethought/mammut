@@ -27,8 +27,12 @@ func (app *App) FocusTimeline() {
 	app.ui.SetRoot(app.grid, true)
 	app.ui.SetFocus(app.timeline)
 
-	toots := app.client.GetTimeline()
-	app.timeline.Toots = toots
+	app.timeline.SetTitle("...")
+
+	go app.ui.QueueUpdateDraw(func() {
+		toots := app.client.GetTimeline()
+		app.timeline.fillToots(toots)
+	})
 }
 
 func (app *App) Start() {
@@ -40,7 +44,7 @@ func (app *App) Start() {
 
 	// Create Grid containing the application's widgets
 	grid := cview.NewGrid()
-	grid.SetColumns(-1, -3, -1)
+	grid.SetColumns(-1, -4, -1)
 	grid.SetRows(1, -1, 1)
 	grid.AddItem(app.timeline, 1, 1, 1, 1, 0, 0, false) // Left - 3 rows
 
