@@ -37,3 +37,15 @@ func (c Client) GetTimeline() []*ma.Status {
 	}
 	return timeline
 }
+
+func (c Client) Toot(content string) *ma.Status {
+	toot := &ma.Toot{
+		Status: content,
+	}
+	status, err := c.m.PostStatus(context.TODO(), toot)
+	if err != nil {
+		panic(err)
+	}
+	return status
+
+}

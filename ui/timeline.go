@@ -28,7 +28,6 @@ func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
 	for _, toot := range t.Toots {
 		tc := NewToot(toot)
 		t.AddItem(tc.ListItem)
-		tc.View()
 
 	}
 	return t
@@ -54,6 +53,11 @@ func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 
 	case tcell.KeyRune:
 		switch event.Rune() {
+		case 't': // Home.
+			m := NewComposeModal(t.app)
+			t.app.ui.SetRoot(m, true)
+
+			return nil
 		case 'g': // Home.
 			t.SetCurrentItem(0)
 		case 'G': // End.

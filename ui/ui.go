@@ -27,6 +27,8 @@ func (app *App) FocusTimeline() {
 	app.ui.SetRoot(app.grid, true)
 	app.ui.SetFocus(app.timeline)
 
+	toots := app.client.GetTimeline()
+	app.timeline.Toots = toots
 }
 
 func (app *App) Start() {

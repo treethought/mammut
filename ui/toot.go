@@ -28,18 +28,15 @@ func formatContent(html string) string {
 }
 
 func NewToot(status *mastodon.Status) *Toot {
-	return &Toot{
+	t := &Toot{
 		ListItem: cview.NewListItem(status.Account.DisplayName),
 		status:   status,
 	}
-}
-
-func (t *Toot) View() {
-
 	content := formatContent(t.status.Content)
 
 	t.SetMainText(t.status.Account.DisplayName)
 	t.SetSecondaryText(content)
 	t.SetReference(t.status)
-
+	return t
 }
+
