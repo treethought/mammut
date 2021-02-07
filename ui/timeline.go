@@ -20,14 +20,31 @@ func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
 	}
 	t.SetTitle("Timeline")
 	t.SetBorder(true)
+	t.SetPadding(1, 1, 1, 1)
 	t.SetBackgroundColor(tcell.ColorDefault)
 	t.SetMainTextColor(tcell.ColorLightCyan)
 	t.SetSecondaryTextColor(tcell.ColorNavajoWhite)
 	t.SetSelectedBackgroundColor(tcell.ColorIndianRed)
 	t.SetInputCapture(t.HandleInput)
 
+	t.SetChangedFunc(func(index int, item *cview.ListItem) {
+
+		toot := t.GetCurrentToot()
+		app.SetStatus(toot.status)
+
+	})
+
 	t.fillToots(toots)
 	return t
+
+}
+func (t *Timeline) GetCurrentToot() *Toot {
+	ref := t.GetCurrentItem().GetReference()
+	toot, ok := ref.(*Toot)
+	if !ok {
+		return nil
+	}
+	return toot
 
 }
 
@@ -43,14 +60,11 @@ func (t *Timeline) fillToots(toots []*mastodon.Status) {
 
 func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 
-	ref := t.GetCurrentItem().GetReference()
-	toot, ok := ref.(*Toot)
-	if !ok {
-		return nil
-	}
+	toot := t.GetCurrentToot()
 	status := toot.status
 
 	key := event.Key()
+
 	switch key {
 	case tcell.KeyEnter:
 
@@ -68,15 +82,27 @@ func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 		case 'r': // Refresh
 			t.app.FocusTimeline()
 
+		case 'd': // Delete
+			if t.app.client.IsOwnStatus(status) {
+				t.app.Notify("Deleting toot!")
+				t.app.client.Delete(status)
+				t.app.FocusTimeline()
+				return nil
+			}
+			return event
+
 		case 'l': // Like
 			if toot.IsFavorite() {
+				t.app.Notify("Unliking toot!")
 				t.app.client.Unlike(status)
-			} else {
-				t.app.client.Like(status)
+				t.app.FocusTimeline()
+				return nil
 			}
+			t.app.Notify("Liking toot!")
+			t.app.client.Like(status)
 			t.app.FocusTimeline()
-
 			return nil
+
 		case 'g': // Home.
 			t.SetCurrentItem(0)
 		case 'G': // End.

@@ -17,12 +17,14 @@ type Toot struct {
 }
 
 func formatContent(html string) string {
+	// opts := &md.Options{}
 	converter := md.NewConverter("", true, nil)
 
 	mdContent, err := converter.ConvertString(html)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return mdContent
 
 	result := markdown.Render(mdContent, 80, 6)
 	return string(result)
@@ -38,7 +40,19 @@ func (t *Toot) IsFavorite() bool {
 
 }
 
+func (t *Toot) header() string {
+	header := t.status.Account.DisplayName
+	if t.IsFavorite() {
+		header += emoji.Sprint(" :heart:")
+	} else {
+		header += emoji.Sprint(" :white_heart:")
+	}
+	return header
+
+}
+
 func NewToot(app *App, status *mastodon.Status) *Toot {
+
 	t := &Toot{
 		ListItem: cview.NewListItem(status.Account.DisplayName),
 		status:   status,
@@ -46,13 +60,7 @@ func NewToot(app *App, status *mastodon.Status) *Toot {
 	}
 
 	content := formatContent(t.status.Content)
-
-	main := t.status.Account.DisplayName
-	if t.IsFavorite() {
-		main += emoji.Sprint(":heart:")
-	} else {
-		main += emoji.Sprint(":white_heart:")
-	}
+	main := t.header()
 
 	t.SetMainText(main)
 	t.SetSecondaryText(content)
