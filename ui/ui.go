@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
-	ma "github.com/treethought/masto/mastodon"
+	ma "github.com/treethought/mammut/mastodon"
 	"gitlab.com/tslocum/cview"
 )
 

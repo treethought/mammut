@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/treethought/masto/cmd"
+import "github.com/treethought/mammut/cmd"
 
 func main() {
 	cmd.Execute()

@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/treethought/masto/ui"
+	"github.com/treethought/mammut/ui"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -73,9 +73,9 @@ func initConfig() {
 
 		// Search config in home directory with name ".masto" (without extension).
 		// viper.AddConfigPath(home)
-		viper.SetConfigName(".masto")
-		viper.SetConfigName("masto") // name of config file (without extension)
-		viper.SetConfigType("yaml")  // REQUIRED if the config file does not have the extension in the name
+		viper.SetConfigName(".mammut")
+		viper.SetConfigName("mammut") // name of config file (without extension)
+		viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
 		// viper.AddConfigPath("$HOME/.config") // call multiple times to add many search paths
 		viper.AddConfigPath(".") // optionally look for config in the working directory
 		if err := viper.ReadInConfig(); err != nil {

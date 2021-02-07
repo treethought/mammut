@@ -1,4 +1,4 @@
-module github.com/treethought/masto
+module github.com/treethought/mammut
 
 go 1.15
 
