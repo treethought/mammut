@@ -1,6 +1,11 @@
 package ui
 
 import (
+	"fmt"
+	"log"
+	"os/exec"
+	"runtime"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-mastodon"
 	"gitlab.com/tslocum/cview"
@@ -53,7 +58,6 @@ func NewTimeline(app *App, toots []*mastodon.Status, ttype TimelineType) *Timeli
 
 func (t *Timeline) SetTimeline(ttype TimelineType) {
 	t.ttype = ttype
-
 }
 
 func (t *Timeline) GetCurrentToot() *Toot {
@@ -72,6 +76,25 @@ func (t *Timeline) fillToots(toots []*mastodon.Status) {
 	for _, toot := range t.Toots {
 		tc := NewToot(t.app, toot)
 		t.AddItem(tc.ListItem)
+	}
+
+}
+
+func openbrowser(url string) {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
@@ -119,6 +142,10 @@ func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 			t.app.Notify("Liking toot!")
 			t.app.client.Like(status)
 			t.app.FocusTimeline()
+			return nil
+
+		case 'o': // Open
+			openbrowser(status.URL)
 			return nil
 
 		case 'g': // Home.

@@ -44,7 +44,6 @@ func (app *App) FocusTimeline() {
 func (app *App) SetStatus(toot *Toot) {
 	if app.statusView != nil {
 		app.statusView.SetStatus(toot)
-
 	}
 
 	// app.Notify(fmt.Sprintf("Viewing status by: %s", toot.status.Account.DisplayName))
