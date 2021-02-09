@@ -35,7 +35,7 @@ func (app *App) FocusTimeline() {
 	app.timeline.SetTitle("...")
 
 	go app.ui.QueueUpdateDraw(func() {
-		toots := app.client.GetTimeline()
+		toots := app.client.GetTimeline(app.timeline.ttype.String())
 		app.timeline.fillToots(toots)
 		app.timeline.SetTitle("Timeline")
 	})
@@ -94,13 +94,37 @@ func (app *App) Start() {
 	flex.AddItem(app.menu, 0, 1, false)
 	flex.AddItem(mid, 0, 4, false)
 
+	focusManager := cview.NewFocusManager(app.ui.SetFocus)
+	focusManager.SetWrapAround(true)
+	focusManager.Add(app.menu, app.timeline)
+
+	inputHandler := cbind.NewConfiguration()
+	for _, key := range cview.Keys.MovePreviousField {
+		err := inputHandler.Set(key, wrap(focusManager.FocusPrevious))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	for _, key := range cview.Keys.MoveNextField {
+		err := inputHandler.Set(key, wrap(focusManager.FocusNext))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	app.root = flex
+	app.ui.SetInputCapture(inputHandler.Capture)
 
 	app.FocusTimeline()
 
 	err := app.ui.Run()
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+func wrap(f func()) func(ev *tcell.EventKey) *tcell.EventKey {
+	return func(ev *tcell.EventKey) *tcell.EventKey {
+		f()
+		return nil
 	}
 }
