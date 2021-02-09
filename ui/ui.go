@@ -6,6 +6,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	ma "github.com/treethought/mammut/mastodon"
+	"gitlab.com/tslocum/cbind"
 	"gitlab.com/tslocum/cview"
 )
 
@@ -16,6 +17,7 @@ type App struct {
 	timeline   *Timeline
 	info       *cview.TextView
 	statusView *StatusFrame
+	menu       *Menu
 }
 
 func New() *App {
@@ -23,7 +25,6 @@ func New() *App {
 	return &App{
 		client: client,
 	}
-
 }
 
 func (app *App) FocusTimeline() {
@@ -46,14 +47,8 @@ func (app *App) SetStatus(toot *Toot) {
 
 	}
 
-	// app.Notify(fmt.Sprintf("Viewing status by: %s", status.Account.DisplayName))
+	// app.Notify(fmt.Sprintf("Viewing status by: %s", toot.status.Account.DisplayName))
 
-	// go app.ui.QueueUpdateDraw(func() {
-	// app.statusView.SetStatus(status)
-	// frame := NewStatusFrame(app, status)
-	// app.statusView = nil
-	// app.statusView = frame
-	// })
 }
 
 func (app *App) Notify(msg string) {
@@ -79,9 +74,7 @@ func (app *App) Start() {
 	}
 	app.timeline = NewTimeline(app, toots)
 
-	leftpanel := cview.NewBox()
-	leftpanel.SetBackgroundColor(tcell.ColorDefault)
-	//
+	app.menu = NewMenu(app)
 
 	app.statusView = NewStatusFrame(app)
 
@@ -90,24 +83,17 @@ func (app *App) Start() {
 	mid := cview.NewFlex()
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
-	mid.AddItem(app.timeline, 0, 3, true)
+	mid.AddItem(app.timeline, 0, 4, true)
 	mid.AddItem(app.statusView, 0, 2, false)
-	mid.AddItem(app.info, 2, 1, false)
+	mid.AddItem(app.info, 0, 1, false)
 
 	flex := cview.NewFlex()
-	flex.SetBackgroundTransparent(false)
+	flex.SetBackgroundTransparent(true)
 	flex.SetBackgroundColor(tcell.ColorDefault)
-	// flex.AddItem(leftpanel, 0, 2, false)
-	flex.AddItem(mid, 0, 3, false)
-	// flex.AddItem(leftpanel, 0, 1, false)
 
-	// flex.AddItem(app.info, 0, 1, false)
+	flex.AddItem(app.menu, 0, 1, false)
+	flex.AddItem(mid, 0, 4, false)
 
-	// Create Grid containing the application's widgets
-	// grid := cview.NewGrid()
-	// grid.SetColumns(-1, -4, -1)
-	// grid.SetRows(1, -1, 1)
-	// grid.AddItem(app.timeline, 1, 1, 1, 1, 0, 0, false) // Left - 3 rows
 
 	app.root = flex
 

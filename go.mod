@@ -12,5 +12,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
+	gitlab.com/tslocum/cbind v0.1.4
 	gitlab.com/tslocum/cview v1.5.3
 )
