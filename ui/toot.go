@@ -62,6 +62,10 @@ func NewToot(app *App, status *mastodon.Status) *Toot {
 	content := formatContent(t.status.Content)
 	main := t.header()
 
+	if status.Reblog != nil {
+		main = emoji.Sprintf("%s  || :repeat_button:@%s", main, status.Reblog.Account.DisplayName)
+	}
+
 	t.SetMainText(main)
 	t.SetSecondaryText(content)
 	t.SetReference(t)

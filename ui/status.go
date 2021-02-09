@@ -49,7 +49,11 @@ type StatusFrame struct {
 
 func NewStatusFrame(app *App) *StatusFrame {
 
-	frame := cview.NewFrame(cview.NewBox())
+	box := cview.NewBox()
+	box.SetBackgroundColor(tcell.ColorDefault)
+
+	frame := cview.NewFrame(box)
+	// frame.SetBackgroundTransparent(true)
 	frame.SetBackgroundColor(tcell.ColorDefault)
 	frame.SetBorders(2, 2, 3, 3, 4, 4)
 	frame.SetBorder(true)
@@ -64,7 +68,6 @@ func NewStatusFrame(app *App) *StatusFrame {
 
 func (f *StatusFrame) SetStatus(toot *Toot) {
 	f.Clear()
-	f.SetBackgroundColor(tcell.ColorDefault)
 
 	f.toot = toot
 	status := toot.status
@@ -76,6 +79,8 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	text.SetBackgroundColor(tcell.ColorDefault)
 
 	f.Frame = cview.NewFrame(text)
+	f.SetBackgroundColor(tcell.ColorDefault)
+	f.SetBorder(true)
 
 	if f.toot == nil {
 		return
@@ -107,5 +112,9 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	f.AddText(status.Account.Username, true, cview.AlignRight, tcell.ColorWhite)
 	f.AddText(created, true, cview.AlignCenter, tcell.ColorWhite)
 	f.AddText(info, false, cview.AlignCenter, tcell.ColorWhite)
+	if status.Reblog != nil {
+		boosted := fmt.Sprintf("Boosted from %s", status.Reblog.Account.DisplayName)
+		f.AddText(boosted, false, cview.AlignRight, tcell.ColorLightCyan)
+	}
 
 }
