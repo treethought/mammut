@@ -68,27 +68,28 @@ func (app *App) Start() {
 	// Initialize application
 	app.ui = cview.NewApplication()
 
-	toots := app.client.GetTimeline()
+	toots := app.client.GetTimeline("local")
 	if len(toots) == 0 {
 		log.Fatal("Failed to get toots")
 	}
-	app.timeline = NewTimeline(app, toots)
+	app.timeline = NewTimeline(app, toots, TimelineLocal)
 
 	app.menu = NewMenu(app)
 
 	app.statusView = NewStatusFrame(app)
 
 	app.info = cview.NewTextView()
+	app.info.SetBackgroundColor(tcell.ColorDefault)
 
 	mid := cview.NewFlex()
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(app.timeline, 0, 4, true)
-	mid.AddItem(app.statusView, 0, 2, false)
+	mid.AddItem(app.statusView, 0, 4, false)
 	mid.AddItem(app.info, 0, 1, false)
 
 	flex := cview.NewFlex()
-	flex.SetBackgroundTransparent(true)
+	flex.SetBackgroundTransparent(false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
 	flex.AddItem(app.menu, 0, 1, false)

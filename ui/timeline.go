@@ -6,13 +6,28 @@ import (
 	"gitlab.com/tslocum/cview"
 )
 
+type TimelineType int
+
+const (
+	TimelineLocal TimelineType = iota
+	TimelinePublic
+	TimelineLiked
+	TimelineProfile
+	TimelineTag
+)
+
+func (t TimelineType) String() string {
+	return [...]string{"local", "public", "liked", "profile", "tags"}[t]
+}
+
 type Timeline struct {
 	*cview.List
 	Toots []*mastodon.Status
 	app   *App
+	ttype TimelineType
 }
 
-func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
+func NewTimeline(app *App, toots []*mastodon.Status, ttype TimelineType) *Timeline {
 	t := &Timeline{
 		List:  cview.NewList(),
 		Toots: toots,
@@ -34,8 +49,13 @@ func NewTimeline(app *App, toots []*mastodon.Status) *Timeline {
 
 	t.fillToots(toots)
 	return t
+}
+
+func (t *Timeline) SetTimeline(ttype TimelineType) {
+	t.ttype = ttype
 
 }
+
 func (t *Timeline) GetCurrentToot() *Toot {
 	ref := t.GetCurrentItem().GetReference()
 	toot, ok := ref.(*Toot)

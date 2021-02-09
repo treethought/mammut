@@ -36,9 +36,38 @@ func NewClient() Client {
 
 }
 
-func (c Client) GetTimeline() []*ma.Status {
+func (c Client) GetAccountToots() ([]*ma.Status, error) {
 	pg := &ma.Pagination{Limit: 60}
-	timeline, err := c.m.GetTimelineHome(context.Background(), pg)
+	return c.m.GetAccountStatuses(context.Background(), c.account.ID, pg)
+
+}
+
+func (c Client) GetTimeline(ttype string) []*ma.Status {
+	pg := &ma.Pagination{Limit: 60}
+
+	var timeline []*ma.Status
+	var err error
+	switch ttype {
+	case "local":
+		timeline, err = c.m.GetTimelineHome(context.Background(), pg)
+
+	case "public":
+		timeline, err = c.m.GetTimelinePublic(context.Background(), false, pg)
+
+	case "liked":
+		// TODO: get profile statuses
+		timeline, err = c.m.GetTimelineHome(context.Background(), pg)
+
+	case "profile":
+		timeline, err = c.GetAccountToots()
+
+	case "tags":
+		// TODO: handle tag
+		timeline, err = c.m.GetTimelineHashtag(context.Background(), "linux", false, pg)
+	default:
+		timeline, err = c.m.GetTimelineHome(context.Background(), pg)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
