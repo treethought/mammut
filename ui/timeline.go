@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-mastodon"
@@ -14,15 +15,23 @@ import (
 type TimelineType int
 
 const (
-	TimelineLocal TimelineType = iota
-	TimelinePublic
-	TimelineLiked
+	TimelineHome TimelineType = iota
+	TimelineLocal
+	TimelineFederated
 	TimelineProfile
 	TimelineTag
 )
 
+var TimelineTypes = []TimelineType{
+	TimelineHome,
+	TimelineLocal,
+	TimelineFederated,
+	TimelineProfile,
+	TimelineTag,
+}
+
 func (t TimelineType) String() string {
-	return [...]string{"local", "public", "liked", "profile", "tags"}[t]
+	return [...]string{"home", "local", "federated", "profile", "tags"}[t]
 }
 
 type Timeline struct {
@@ -68,6 +77,14 @@ func (t *Timeline) GetCurrentToot() *Toot {
 	}
 	return toot
 
+}
+
+func (t *Timeline) Refresh() {
+	toots := t.app.client.GetTimeline(t.ttype.String())
+	t.fillToots(toots)
+	title := fmt.Sprintf(" Timeline - %s ", strings.Title(t.ttype.String()))
+	t.SetTitle(title)
+	t.SetTitleColor(tcell.ColorLightCyan)
 }
 
 func (t *Timeline) fillToots(toots []*mastodon.Status) {

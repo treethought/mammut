@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const PaginationLimit = 60
+
 type Client struct {
 	m       *ma.Client
 	account *ma.Account
@@ -37,9 +39,29 @@ func NewClient() Client {
 }
 
 func (c Client) GetAccountToots() ([]*ma.Status, error) {
-	pg := &ma.Pagination{Limit: 60}
+	pg := &ma.Pagination{Limit: PaginationLimit}
 	return c.m.GetAccountStatuses(context.Background(), c.account.ID, pg)
 
+}
+
+func (c Client) getHomeTimeline() ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetTimelineHome(context.TODO(), pg)
+}
+
+func (c Client) getLocalPublicTimeline() ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetTimelinePublic(context.TODO(), false, pg)
+}
+
+func (c Client) getFedPublicTimeline() ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetTimelinePublic(context.TODO(), true, pg)
+}
+
+func (c Client) getTagTimeline(tag string) ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetTimelineHashtag(context.TODO(), tag, true, pg)
 }
 
 func (c Client) GetTimeline(ttype string) []*ma.Status {
@@ -48,15 +70,17 @@ func (c Client) GetTimeline(ttype string) []*ma.Status {
 	var timeline []*ma.Status
 	var err error
 	switch ttype {
+
+	case "home":
+
+		timeline, err = c.getHomeTimeline()
+
 	case "local":
-		timeline, err = c.m.GetTimelineHome(context.Background(), pg)
+		timeline, err = c.getLocalPublicTimeline()
 
-	case "public":
-		timeline, err = c.m.GetTimelinePublic(context.Background(), false, pg)
-
-	case "liked":
+	case "federated":
 		// TODO: get profile statuses
-		timeline, err = c.m.GetTimelineHome(context.Background(), pg)
+		timeline, err = c.getFedPublicTimeline()
 
 	case "profile":
 		timeline, err = c.GetAccountToots()

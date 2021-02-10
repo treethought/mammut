@@ -35,9 +35,7 @@ func (app *App) FocusTimeline() {
 	app.timeline.SetTitle("...")
 
 	go app.ui.QueueUpdateDraw(func() {
-		toots := app.client.GetTimeline(app.timeline.ttype.String())
-		app.timeline.fillToots(toots)
-		app.timeline.SetTitle("Timeline")
+		app.timeline.Refresh()
 	})
 }
 

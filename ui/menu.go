@@ -18,14 +18,7 @@ func NewMenu(app *App) *Menu {
 	m.SetBorder(true)
 	m.SetBackgroundColor(tcell.ColorDefault)
 
-	items := []TimelineType{
-		TimelineLocal,
-		TimelinePublic,
-		// TimelineLiked,
-		TimelineProfile,
-		// TimelineTag,
-	}
-	for _, i := range items {
+	for _, i := range TimelineTypes {
 		li := cview.NewListItem(i.String())
 		li.SetReference(i)
 		m.AddItem(li)
