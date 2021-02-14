@@ -2,8 +2,10 @@ package ui
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 
+	"github.com/eliukblau/pixterm/pkg/ansimage"
 	"github.com/gdamore/tcell/v2"
 	"github.com/kyokomi/emoji/v2"
 	"github.com/mattn/go-mastodon"
@@ -75,8 +77,25 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	content := formatContent(status.Content)
 
 	text := cview.NewTextView()
-	text.SetText(content)
 	text.SetBackgroundColor(tcell.ColorDefault)
+	text.SetDynamicColors(true)
+
+	for _, m := range toot.status.MediaAttachments {
+		if m.Type == "image" {
+			img, err := buildImage(m.URL)
+			if err != nil {
+				panic(err)
+			}
+
+			ans := img.Render()
+			trans := cview.TranslateANSI(ans)
+			content = fmt.Sprintf("%s\n%s", content, trans)
+
+		}
+
+	}
+
+	text.SetText(content)
 
 	f.Frame = cview.NewFrame(text)
 	f.SetBackgroundColor(tcell.ColorDefault)
@@ -96,7 +115,6 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 
 	replies := emoji.Sprintf(":speech_balloon: %d", status.RepliesCount)
 	boosts := emoji.Sprintf(":repeat_button: %d", status.ReblogsCount)
-	// likes := emoji.Sprintf(":heart: %d", status.FavouritesCount)
 
 	likes := ""
 	if toot.IsFavorite() {
@@ -111,10 +129,20 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	f.AddText(status.Account.Acct, true, cview.AlignCenter, tcell.ColorWhite)
 	f.AddText(status.Account.Username, true, cview.AlignRight, tcell.ColorWhite)
 	f.AddText(created, true, cview.AlignCenter, tcell.ColorWhite)
+
 	f.AddText(info, false, cview.AlignCenter, tcell.ColorWhite)
 	if status.Reblog != nil {
 		boosted := fmt.Sprintf("Boosted from %s", status.Reblog.Account.DisplayName)
 		f.AddText(boosted, false, cview.AlignRight, tcell.ColorLightCyan)
 	}
+
+}
+
+func buildImage(url string) (*ansimage.ANSImage, error) {
+	pix, err := ansimage.NewScaledFromURL(url, 20, 20, color.Transparent, ansimage.ScaleModeResize, ansimage.NoDithering)
+	if err != nil {
+		return nil, err
+	}
+	return pix, nil
 
 }
