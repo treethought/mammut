@@ -80,11 +80,17 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	text.SetBackgroundColor(tcell.ColorDefault)
 	text.SetDynamicColors(true)
 
+	_, _, w, h := f.GetInnerRect()
+
 	for _, m := range toot.status.MediaAttachments {
 		if m.Type == "image" {
-			img, err := buildImage(m.URL)
+
+			w = w - 5
+			h = h - len(strings.Split(content, "\n")) - 5
+
+			img, err := buildImage(m.URL, w, h)
 			if err != nil {
-				panic(err)
+				continue
 			}
 
 			ans := img.Render()
@@ -138,8 +144,8 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 
 }
 
-func buildImage(url string) (*ansimage.ANSImage, error) {
-	pix, err := ansimage.NewScaledFromURL(url, 20, 20, color.Transparent, ansimage.ScaleModeResize, ansimage.NoDithering)
+func buildImage(url string, x, y int) (*ansimage.ANSImage, error) {
+	pix, err := ansimage.NewScaledFromURL(url, y, x, color.Transparent, ansimage.ScaleModeResize, ansimage.NoDithering)
 	if err != nil {
 		return nil, err
 	}
