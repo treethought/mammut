@@ -81,10 +81,7 @@ func (app *App) Notify(msg string) {
 	})
 }
 
-func (app *App) Start() {
-	// Initialize application
-	app.ui = cview.NewApplication()
-
+func (app *App) initViews() {
 	toots := app.client.GetTimeline("local")
 	if len(toots) == 0 {
 		log.Fatal("Failed to get toots")
@@ -119,7 +116,11 @@ func (app *App) Start() {
 
 	flex.AddItem(app.menu, 0, 1, false)
 	flex.AddItem(mid, 0, 4, false)
+	app.root = flex
 
+}
+
+func (app *App) initInputHandler() {
 	focusManager := cview.NewFocusManager(app.ui.SetFocus)
 	focusManager.SetWrapAround(true)
 	focusManager.Add(app.menu, app.panels)
@@ -138,8 +139,16 @@ func (app *App) Start() {
 		}
 	}
 
-	app.root = flex
 	app.ui.SetInputCapture(inputHandler.Capture)
+
+}
+
+func (app *App) Start() {
+	// Initialize application
+	app.ui = cview.NewApplication()
+
+	app.initViews()
+	app.initInputHandler()
 
 	app.FocusTimeline()
 
