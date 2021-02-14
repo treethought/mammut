@@ -88,14 +88,8 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 			w = w - 5
 			h = h - len(strings.Split(content, "\n")) - 5
 
-			img, err := buildImage(m.URL, w, h)
-			if err != nil {
-				continue
-			}
-
-			ans := img.Render()
-			trans := cview.TranslateANSI(ans)
-			content = fmt.Sprintf("%s\n%s", content, trans)
+			img := translateImage(m.URL, w, h)
+			content = fmt.Sprintf("%s\n%s", content, img)
 		}
 	}
 
@@ -127,9 +121,12 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 
 	info := strings.Join([]string{replies, boosts, likes}, " | ")
 
+	avatar := translateImage(status.Account.AvatarStatic, 4, 8)
+
 	f.AddText(status.Account.DisplayName, true, cview.AlignLeft, tcell.ColorWhite)
 	f.AddText(status.Account.Acct, true, cview.AlignCenter, tcell.ColorWhite)
 	f.AddText(status.Account.Username, true, cview.AlignRight, tcell.ColorWhite)
+	f.AddText(avatar, true, cview.AlignLeft, tcell.ColorWhite)
 	f.AddText(created, true, cview.AlignCenter, tcell.ColorWhite)
 
 	f.AddText(info, false, cview.AlignCenter, tcell.ColorWhite)
@@ -137,6 +134,16 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 		boosted := fmt.Sprintf("Boosted from %s", status.Reblog.Account.DisplayName)
 		f.AddText(boosted, false, cview.AlignRight, tcell.ColorLightCyan)
 	}
+
+}
+
+func translateImage(url string, x, y int) string {
+	img, err := buildImage(url, x, y)
+	if err != nil {
+		return ""
+	}
+	ansi := img.Render()
+	return cview.TranslateANSI(ansi)
 
 }
 
