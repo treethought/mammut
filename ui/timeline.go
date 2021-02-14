@@ -77,15 +77,30 @@ func (t *Timeline) GetCurrentToot() *Toot {
 		return nil
 	}
 	return toot
-
+}
+func (t *Timeline) SetCurrentToot(toot *Toot) {
+	for i, item := range t.GetItems() {
+		ref := item.GetReference()
+		tootc, ok := ref.(*Toot)
+		if !ok {
+			continue
+		}
+		if tootc.status.ID == toot.status.ID {
+			t.SetCurrentItem(i)
+		}
+	}
 }
 
 func (t *Timeline) Refresh() {
+	selected := t.GetCurrentToot()
 	toots := t.app.client.GetTimeline(t.ttype.String())
 	t.fillToots(toots)
 	title := fmt.Sprintf(" Timeline - %s ", strings.Title(t.ttype.String()))
 	t.SetTitle(title)
 	t.SetTitleColor(tcell.ColorLightCyan)
+	if selected != nil {
+		t.SetCurrentToot(selected)
+	}
 }
 
 func (t *Timeline) fillToots(toots []*mastodon.Status) {

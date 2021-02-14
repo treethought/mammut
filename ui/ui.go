@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -68,12 +69,13 @@ func (app *App) ViewThread(toot *Toot) {
 
 }
 
-func (app *App) Notify(msg string) {
+func (app *App) Notify(msg string, a ...interface{}) {
 	if app.info == nil {
 		return
 	}
 	app.info.Clear()
-	app.info.SetText(msg)
+	text := fmt.Sprintf(msg, a...)
+	app.info.SetText(text)
 	go app.ui.QueueUpdateDraw(func() {
 		time.Sleep(2 * time.Second)
 		app.info.Clear()

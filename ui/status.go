@@ -96,9 +96,7 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 			ans := img.Render()
 			trans := cview.TranslateANSI(ans)
 			content = fmt.Sprintf("%s\n%s", content, trans)
-
 		}
-
 	}
 
 	text.SetText(content)
@@ -116,8 +114,6 @@ func (f *StatusFrame) SetStatus(toot *Toot) {
 	created := fmt.Sprintf("%02d:%02d %d-%02d-%02d",
 		ct.Hour(), ct.Minute(),
 		ct.Year(), ct.Month(), ct.Day())
-
-	// replies := emoji.Sprintf("balloon", status.RepliesCount)
 
 	replies := emoji.Sprintf(":speech_balloon: %d", status.RepliesCount)
 	boosts := emoji.Sprintf(":repeat_button: %d", status.ReblogsCount)
