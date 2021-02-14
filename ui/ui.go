@@ -18,6 +18,8 @@ type App struct {
 	info       *cview.TextView
 	statusView *StatusFrame
 	menu       *Menu
+	thread     *TootReplies
+	panels     *cview.Panels
 }
 
 func New() *App {
@@ -48,6 +50,24 @@ func (app *App) SetStatus(toot *Toot) {
 
 }
 
+func (app *App) ViewTimeline() {
+	// app.panels.ShowPanel("timeline")
+	app.panels.HidePanel("thread")
+	app.panels.SetCurrentPanel("timeline")
+	app.panels.SendToFront("tiemeline")
+	app.ui.SetFocus(app.timeline)
+}
+
+func (app *App) ViewThread(toot *Toot) {
+	app.thread.SetStatus(toot.status)
+	// app.panels.ShowPanel("thread")
+	app.panels.HidePanel("timeline")
+	app.panels.SetCurrentPanel("thread")
+	app.panels.SendToFront("thread")
+	app.ui.SetFocus(app.thread)
+
+}
+
 func (app *App) Notify(msg string) {
 	if app.info == nil {
 		return
@@ -75,13 +95,21 @@ func (app *App) Start() {
 
 	app.statusView = NewStatusFrame(app)
 
+	app.thread = NewTootReplies(app)
+
 	app.info = cview.NewTextView()
 	app.info.SetBackgroundColor(tcell.ColorDefault)
+
+	panels := cview.NewPanels()
+	panels.AddPanel("timeline", app.timeline, true, true)
+	panels.AddPanel("thread", app.thread, true, true)
+	panels.SetCurrentPanel("timeline")
+	app.panels = panels
 
 	mid := cview.NewFlex()
 	mid.SetBackgroundColor(tcell.ColorDefault)
 	mid.SetDirection(cview.FlexRow)
-	mid.AddItem(app.timeline, 0, 4, true)
+	mid.AddItem(app.panels, 0, 4, true)
 	mid.AddItem(app.statusView, 0, 4, false)
 	mid.AddItem(app.info, 0, 1, false)
 
@@ -94,7 +122,7 @@ func (app *App) Start() {
 
 	focusManager := cview.NewFocusManager(app.ui.SetFocus)
 	focusManager.SetWrapAround(true)
-	focusManager.Add(app.menu, app.timeline)
+	focusManager.Add(app.menu, app.panels)
 
 	inputHandler := cbind.NewConfiguration()
 	for _, key := range cview.Keys.MovePreviousField {

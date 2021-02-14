@@ -20,6 +20,7 @@ const (
 	TimelineFederated
 	TimelineProfile
 	TimelineTag
+	TimelineTootContext
 )
 
 var TimelineTypes = []TimelineType{
@@ -125,9 +126,10 @@ func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
 
 	switch key {
 	case tcell.KeyEnter:
+		t.app.ViewThread(toot)
 
-		m := NewStatusModal(t.app, toot.status)
-		t.app.ui.SetRoot(m, true)
+		// m := NewStatusModal(t.app, toot.status)
+		// t.app.ui.SetRoot(m, true)
 
 		return nil
 

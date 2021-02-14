@@ -41,7 +41,6 @@ func NewClient() Client {
 func (c Client) GetAccountToots() ([]*ma.Status, error) {
 	pg := &ma.Pagination{Limit: PaginationLimit}
 	return c.m.GetAccountStatuses(context.Background(), c.account.ID, pg)
-
 }
 
 func (c Client) getHomeTimeline() ([]*ma.Status, error) {
@@ -132,4 +131,13 @@ func (c Client) IsOwnStatus(status *ma.Status) bool {
 
 func (c Client) Delete(status *ma.Status) {
 	c.m.DeleteStatus(context.TODO(), status.ID)
+}
+
+func (c Client) GetStatusContext(status *ma.Status) *ma.Context {
+	con, err := c.m.GetStatusContext(context.TODO(), status.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return con
+
 }

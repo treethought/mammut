@@ -17,6 +17,8 @@ func NewMenu(app *App) *Menu {
 	}
 	m.SetBorder(true)
 	m.SetBackgroundColor(tcell.ColorDefault)
+	m.SetSelectedTextColor(tcell.ColorTeal)
+	m.SetHighlightFullLine(false)
 
 	for _, i := range TimelineTypes {
 		li := cview.NewListItem(i.String())
