@@ -13,11 +13,13 @@ const PaginationLimit = 60
 type Client struct {
 	m       *ma.Client
 	account *ma.Account
+	server  string
 }
 
 func NewClient() Client {
+	server := viper.GetString("server")
 	c := ma.NewClient(&ma.Config{
-		Server:       viper.GetString("server"),
+		Server:       server,
 		ClientID:     viper.GetString("client_id"),
 		ClientSecret: viper.GetString("client_secret"),
 	})
@@ -34,8 +36,15 @@ func NewClient() Client {
 		log.Fatal(err)
 	}
 
-	return Client{m: c, account: account}
+	return Client{m: c, account: account, server: server}
+}
 
+func (c Client) Account() *ma.Account {
+	return c.account
+}
+
+func (c Client) Server() string {
+	return c.server
 }
 
 func (c Client) GetAccountToots() ([]*ma.Status, error) {
@@ -63,6 +72,16 @@ func (c Client) getTagTimeline(tag string) ([]*ma.Status, error) {
 	return c.m.GetTimelineHashtag(context.TODO(), tag, true, pg)
 }
 
+func (c Client) getMediaTimeline() ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetTimelineMedia(context.TODO(), true, pg)
+}
+
+func (c Client) getFavoriteTimeline() ([]*ma.Status, error) {
+	pg := &ma.Pagination{Limit: PaginationLimit}
+	return c.m.GetFavourites(context.TODO(), pg)
+}
+
 func (c Client) GetTimeline(ttype string) []*ma.Status {
 	pg := &ma.Pagination{Limit: 60}
 
@@ -83,6 +102,12 @@ func (c Client) GetTimeline(ttype string) []*ma.Status {
 
 	case "profile":
 		timeline, err = c.GetAccountToots()
+
+	case "likes":
+		timeline, err = c.getFavoriteTimeline()
+
+	case "media":
+		timeline, err = c.getMediaTimeline()
 
 	case "tags":
 		// TODO: handle tag

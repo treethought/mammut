@@ -19,7 +19,10 @@ const (
 	TimelineLocal
 	TimelineFederated
 	TimelineProfile
+	TimelineLikes
 	TimelineTag
+	TimelineMedia
+
 	TimelineTootContext
 )
 
@@ -28,11 +31,13 @@ var TimelineTypes = []TimelineType{
 	TimelineLocal,
 	TimelineFederated,
 	TimelineProfile,
+	TimelineLikes,
 	TimelineTag,
+	TimelineMedia,
 }
 
 func (t TimelineType) String() string {
-	return [...]string{"home", "local", "federated", "profile", "tags"}[t]
+	return [...]string{"home", "local", "federated", "profile", "likes", "tags", "media"}[t]
 }
 
 type Timeline struct {
