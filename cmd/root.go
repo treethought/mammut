@@ -1,18 +1,3 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -74,10 +59,11 @@ func initConfig() {
 		// Search config in home directory with name ".masto" (without extension).
 		// viper.AddConfigPath(home)
 		viper.SetConfigName(".mammut")
-		viper.SetConfigName("mammut") // name of config file (without extension)
-		viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
-		// viper.AddConfigPath("$HOME/.config") // call multiple times to add many search paths
-		viper.AddConfigPath(".") // optionally look for config in the working directory
+		viper.SetConfigName("mammut")        // name of config file (without extension)
+		viper.SetConfigType("yaml")          // REQUIRED if the config file does not have the extension in the name
+		viper.AddConfigPath("$HOME/.config") // call multiple times to add many search paths
+		viper.AddConfigPath("$HOME")         // call multiple times to add many search paths
+		viper.AddConfigPath(".")             // optionally look for config in the working directory
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 				viper.SafeWriteConfig()

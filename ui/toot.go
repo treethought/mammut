@@ -42,6 +42,7 @@ func (t *Toot) IsFavorite() bool {
 
 func (t *Toot) header() string {
 	header := t.status.Account.DisplayName
+
 	if t.IsFavorite() {
 		header += emoji.Sprint(" :heart:")
 	} else {

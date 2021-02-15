@@ -92,11 +92,14 @@ func (app *App) initViews() {
 
 	app.menu = NewMenu(app)
 
+	acctInfo := NewInfoView(app)
+
 	app.statusView = NewStatusFrame(app)
 
 	app.thread = NewTootReplies(app)
 
 	app.info = cview.NewTextView()
+	app.info.SetBorder(true)
 	app.info.SetBackgroundColor(tcell.ColorDefault)
 
 	panels := cview.NewPanels()
@@ -110,13 +113,19 @@ func (app *App) initViews() {
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(app.panels, 0, 4, true)
 	mid.AddItem(app.statusView, 0, 4, false)
-	mid.AddItem(app.info, 0, 1, false)
+	// mid.AddItem(app.info, 0, 1, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
-	flex.AddItem(app.menu, 0, 1, false)
+	left := cview.NewFlex()
+	left.SetDirection(cview.FlexRow)
+	left.AddItem(app.menu, 0, 7, false)
+	left.AddItem(app.info, 0, 1, false)
+	left.AddItem(acctInfo, 0, 1, false)
+
+	flex.AddItem(left, 0, 1, false)
 	flex.AddItem(mid, 0, 4, false)
 	app.root = flex
 
