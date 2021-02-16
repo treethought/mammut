@@ -12,15 +12,17 @@ import (
 )
 
 type App struct {
-	client     ma.Client
-	ui         *cview.Application
-	root       *cview.Flex
-	timeline   *Timeline
-	info       *cview.TextView
-	statusView *StatusFrame
-	menu       *Menu
-	thread     *TootReplies
-	panels     *cview.Panels
+	client       ma.Client
+	ui           *cview.Application
+	root         *cview.Flex
+	timeline     *Timeline
+	info         *cview.TextView
+	statusView   *StatusFrame
+	menu         *Menu
+	thread       *TootReplies
+	panels       *cview.Panels
+	compose      *ComposeModal
+	focusManager *cview.FocusManager
 }
 
 func New() *App {
@@ -52,8 +54,6 @@ func (app *App) SetStatus(toot *Toot) {
 }
 
 func (app *App) ViewTimeline() {
-	// app.panels.ShowPanel("timeline")
-	app.panels.HidePanel("thread")
 	app.panels.SetCurrentPanel("timeline")
 	app.panels.SendToFront("tiemeline")
 	app.ui.SetFocus(app.timeline)
@@ -61,12 +61,15 @@ func (app *App) ViewTimeline() {
 
 func (app *App) ViewThread(toot *Toot) {
 	app.thread.SetStatus(toot.status)
-	// app.panels.ShowPanel("thread")
-	app.panels.HidePanel("timeline")
 	app.panels.SetCurrentPanel("thread")
 	app.panels.SendToFront("thread")
 	app.ui.SetFocus(app.thread)
+}
 
+func (app *App) ViewCompose() {
+	app.panels.SetCurrentPanel("compose")
+	app.panels.SendToFront("compose")
+	app.ui.SetFocus(app.compose)
 }
 
 func (app *App) Notify(msg string, a ...interface{}) {
@@ -102,9 +105,12 @@ func (app *App) initViews() {
 	app.info.SetBorder(true)
 	app.info.SetBackgroundColor(tcell.ColorDefault)
 
+	app.compose = NewComposeModal(app)
+
 	panels := cview.NewPanels()
 	panels.AddPanel("timeline", app.timeline, true, true)
 	panels.AddPanel("thread", app.thread, true, true)
+	panels.AddPanel("compose", app.compose, true, true)
 	panels.SetCurrentPanel("timeline")
 	app.panels = panels
 
@@ -131,26 +137,38 @@ func (app *App) initViews() {
 
 }
 
+func (app *App) handleCompose(ev *tcell.EventKey) *tcell.EventKey {
+	current, _ := app.panels.GetFrontPanel()
+	if current == "compose" {
+		return ev
+	}
+	app.ViewCompose()
+	return nil
+}
+
+func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
+	current, _ := app.panels.GetFrontPanel()
+	if current == "compose" {
+		return ev
+	}
+	app.focusManager.FocusNext()
+	return nil
+
+}
+
+func (app *App) initBindings() {
+	c := cbind.NewConfiguration()
+
+	c.SetRune(tcell.ModNone, 't', app.handleCompose)
+	c.SetKey(tcell.ModNone, tcell.KeyTAB, app.handleToggle)
+	app.ui.SetInputCapture(c.Capture)
+
+}
+
 func (app *App) initInputHandler() {
-	focusManager := cview.NewFocusManager(app.ui.SetFocus)
-	focusManager.SetWrapAround(true)
-	focusManager.Add(app.menu, app.panels)
-
-	inputHandler := cbind.NewConfiguration()
-	for _, key := range cview.Keys.MovePreviousField {
-		err := inputHandler.Set(key, wrap(focusManager.FocusPrevious))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	for _, key := range cview.Keys.MoveNextField {
-		err := inputHandler.Set(key, wrap(focusManager.FocusNext))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	app.ui.SetInputCapture(inputHandler.Capture)
+	app.focusManager = cview.NewFocusManager(app.ui.SetFocus)
+	app.focusManager.SetWrapAround(true)
+	app.focusManager.Add(app.menu, app.panels)
 
 }
 
@@ -160,6 +178,7 @@ func (app *App) Start() {
 
 	app.initViews()
 	app.initInputHandler()
+	app.initBindings()
 
 	app.FocusTimeline()
 

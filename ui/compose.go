@@ -27,6 +27,7 @@ func NewComposeModal(app *App) *ComposeModal {
 
 	c.SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 		if buttonLabel == "back" {
+			c.app.ViewTimeline()
 			c.app.FocusTimeline()
 		}
 		if buttonLabel == "toot!" {
@@ -38,6 +39,7 @@ func NewComposeModal(app *App) *ComposeModal {
 			content := input.GetText()
 			c.app.client.Toot(content)
 
+			c.app.ViewTimeline()
 			c.app.FocusTimeline()
 		}
 	})
