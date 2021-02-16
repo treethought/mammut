@@ -9,6 +9,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-mastodon"
+	"gitlab.com/tslocum/cbind"
 	"gitlab.com/tslocum/cview"
 )
 
@@ -42,9 +43,10 @@ func (t TimelineType) String() string {
 
 type Timeline struct {
 	*cview.List
-	Toots []*mastodon.Status
-	app   *App
-	ttype TimelineType
+	Toots        []*mastodon.Status
+	app          *App
+	ttype        TimelineType
+	inputHandler *cbind.Configuration
 }
 
 func NewTimeline(app *App, toots []*mastodon.Status, ttype TimelineType) *Timeline {
@@ -60,7 +62,9 @@ func NewTimeline(app *App, toots []*mastodon.Status, ttype TimelineType) *Timeli
 	t.SetMainTextColor(tcell.ColorLightCyan)
 	t.SetSecondaryTextColor(tcell.ColorNavajoWhite)
 	t.SetSelectedBackgroundColor(tcell.ColorIndianRed)
-	t.SetInputCapture(t.HandleInput)
+
+	t.inputHandler = cbind.NewConfiguration()
+	t.initBindings()
 
 	t.SetChangedFunc(func(index int, item *cview.ListItem) {
 		toot := t.GetCurrentToot()
@@ -69,6 +73,69 @@ func NewTimeline(app *App, toots []*mastodon.Status, ttype TimelineType) *Timeli
 
 	t.fillToots(toots)
 	return t
+}
+
+func (t *Timeline) handleSelect(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	t.app.ViewThread(toot)
+
+	return nil
+}
+
+func (t *Timeline) handleDelete(ev *tcell.EventKey) *tcell.EventKey {
+
+	toot := t.GetCurrentToot()
+	status := toot.status
+
+	if t.app.client.IsOwnStatus(status) {
+		t.app.Notify("Deleting toot!")
+		t.app.client.Delete(status)
+		t.app.FocusTimeline()
+		return nil
+	}
+	return ev
+}
+
+func (t *Timeline) handleRefresh(ev *tcell.EventKey) *tcell.EventKey {
+	t.app.FocusTimeline()
+	return nil
+
+}
+
+func (t *Timeline) handleLike(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	status := toot.status
+
+	if toot.IsFavorite() {
+		t.app.Notify("Unliking toot!")
+		t.app.client.Unlike(status)
+		t.app.FocusTimeline()
+		return nil
+	}
+
+	t.app.Notify("Liking toot!")
+	t.app.client.Like(status)
+	t.app.FocusTimeline()
+	return nil
+}
+func (t *Timeline) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	status := toot.status
+	openbrowser(status.URL)
+	return nil
+
+}
+
+func (t *Timeline) initBindings() {
+
+	t.inputHandler.SetKey(tcell.ModNone, tcell.KeyEnter, t.handleSelect)
+	t.inputHandler.SetRune(tcell.ModNone, 'd', t.handleDelete)
+	t.inputHandler.SetRune(tcell.ModNone, 'r', t.handleRefresh)
+	t.inputHandler.SetRune(tcell.ModNone, 'l', t.handleLike)
+	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
+
+	t.SetInputCapture(t.inputHandler.Capture)
+
 }
 
 func (t *Timeline) SetTimeline(ttype TimelineType) {
@@ -135,72 +202,4 @@ func openbrowser(url string) {
 		log.Fatal(err)
 	}
 
-}
-
-func (t *Timeline) HandleInput(event *tcell.EventKey) *tcell.EventKey {
-
-	toot := t.GetCurrentToot()
-	status := toot.status
-
-	key := event.Key()
-
-	switch key {
-	case tcell.KeyEnter:
-		t.app.ViewThread(toot)
-
-		// m := NewStatusModal(t.app, toot.status)
-		// t.app.ui.SetRoot(m, true)
-
-		return nil
-
-	case tcell.KeyRune:
-		switch event.Rune() {
-		case 't': // Toot
-			m := NewComposeModal(t.app)
-			t.app.ui.SetRoot(m, true)
-
-		case 'r': // Refresh
-			t.app.FocusTimeline()
-
-		case 'd': // Delete
-			if t.app.client.IsOwnStatus(status) {
-				t.app.Notify("Deleting toot!")
-				t.app.client.Delete(status)
-				t.app.FocusTimeline()
-				return nil
-			}
-			return event
-
-		case 'l': // Like
-			if toot.IsFavorite() {
-				t.app.Notify("Unliking toot!")
-				t.app.client.Unlike(status)
-				t.app.FocusTimeline()
-				return nil
-			}
-			t.app.Notify("Liking toot!")
-			t.app.client.Like(status)
-			t.app.FocusTimeline()
-			return nil
-
-		case 'o': // Open
-			openbrowser(status.URL)
-			return nil
-
-		case 'g': // Home.
-			t.SetCurrentItem(0)
-		case 'G': // End.
-			t.SetCurrentItem(-1)
-		case 'j': // Down.
-			cur := t.GetCurrentItemIndex()
-			t.SetCurrentItem(cur + 1)
-		case 'k': // Up.
-			cur := t.GetCurrentItemIndex()
-			t.SetCurrentItem(cur - 1)
-		}
-
-		return nil
-	}
-
-	return event
 }

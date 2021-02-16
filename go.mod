@@ -13,7 +13,6 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-mastodon v0.0.4
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/rivo/tview v0.0.0-20210125085121-dbc1f32bb1d0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	gitlab.com/tslocum/cbind v0.1.4

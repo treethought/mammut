@@ -21,9 +21,24 @@ func NewTootReplies(app *App) *TootReplies {
 		app:      app,
 	}
 
-	r.SetInputCapture(r.HandleInput)
+	// apply thread specific bindings on top of timeline bindings
+	r.initThreadBindings()
 
 	return r
+
+}
+
+func (t *TootReplies) handleBack(ev *tcell.EventKey) *tcell.EventKey {
+	t.app.ViewTimeline()
+	return nil
+
+}
+
+// initRepliesBindings adds toot context specific bindings on top of timeline bindings
+func (t *TootReplies) initThreadBindings() {
+
+	t.inputHandler.SetRune(tcell.ModNone, 'h', t.handleBack)
+	t.inputHandler.SetKey(tcell.ModNone, tcell.KeyEscape, t.handleBack)
 
 }
 
@@ -44,78 +59,4 @@ func (r *TootReplies) SetStatus(status *mastodon.Status) {
 		toots = append(toots, s)
 	}
 	r.fillToots(toots)
-}
-
-func (t *TootReplies) HandleInput(event *tcell.EventKey) *tcell.EventKey {
-
-	toot := t.GetCurrentToot()
-	status := toot.status
-
-	key := event.Key()
-
-	switch key {
-	case tcell.KeyEnter:
-		t.app.ViewThread(toot)
-		return nil
-
-	case tcell.KeyEscape:
-		t.app.ViewTimeline()
-		return nil
-
-	case tcell.KeyRune:
-		switch event.Rune() {
-		case 'h': // Back
-			t.app.ViewTimeline()
-			return nil
-			m := NewComposeModal(t.app)
-			t.app.ui.SetRoot(m, true)
-
-		case 't': // Toot
-			m := NewComposeModal(t.app)
-			t.app.ui.SetRoot(m, true)
-
-		case 'r': // Refresh
-			t.app.FocusTimeline()
-
-		case 'd': // Delete
-			if t.app.client.IsOwnStatus(status) {
-				t.app.Notify("Deleting toot!")
-				t.app.client.Delete(status)
-				t.app.FocusTimeline()
-				return nil
-			}
-			return event
-
-		case 'l': // Like
-			if toot.IsFavorite() {
-				t.app.Notify("Unliking toot!")
-				t.app.client.Unlike(status)
-				t.app.FocusTimeline()
-				return nil
-			}
-			t.app.Notify("Liking toot!")
-			t.app.client.Like(status)
-			t.app.FocusTimeline()
-			return nil
-
-		case 'o': // Open
-			openbrowser(status.URL)
-			return nil
-
-		case 'g': // Home.
-			t.SetCurrentItem(0)
-		case 'G': // End.
-			t.SetCurrentItem(-1)
-		case 'j': // Down.
-			cur := t.GetCurrentItemIndex()
-			t.SetCurrentItem(cur + 1)
-		case 'k': // Up.
-			cur := t.GetCurrentItemIndex()
-			t.SetCurrentItem(cur - 1)
-		}
-
-		return nil
-	}
-
-	return event
 }
