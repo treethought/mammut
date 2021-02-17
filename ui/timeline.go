@@ -102,6 +102,28 @@ func (t *Timeline) handleRefresh(ev *tcell.EventKey) *tcell.EventKey {
 
 }
 
+func (t *Timeline) handleFollow(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	status := toot.status
+
+	t.app.Notify("Following %s", status.Account.Acct)
+	t.app.client.Follow(status.Account.ID)
+	t.app.FocusTimeline()
+	return nil
+
+}
+
+func (t *Timeline) handleUnfollow(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	status := toot.status
+
+	t.app.Notify("Unfollowing %s", status.Account.Acct)
+	t.app.client.Unfollow(status.Account.ID)
+	t.app.FocusTimeline()
+	return nil
+
+}
+
 func (t *Timeline) handleLike(ev *tcell.EventKey) *tcell.EventKey {
 	toot := t.GetCurrentToot()
 	status := toot.status
@@ -119,6 +141,7 @@ func (t *Timeline) handleLike(ev *tcell.EventKey) *tcell.EventKey {
 	return nil
 }
 func (t *Timeline) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
+	t.app.Notify("Opening in browser")
 	toot := t.GetCurrentToot()
 	status := toot.status
 	openbrowser(status.URL)
@@ -133,6 +156,8 @@ func (t *Timeline) initBindings() {
 	t.inputHandler.SetRune(tcell.ModNone, 'r', t.handleRefresh)
 	t.inputHandler.SetRune(tcell.ModNone, 'l', t.handleLike)
 	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
+	t.inputHandler.SetRune(tcell.ModNone, 'f', t.handleFollow)
+	t.inputHandler.SetRune(tcell.ModNone, 'u', t.handleUnfollow)
 
 	t.SetInputCapture(t.inputHandler.Capture)
 

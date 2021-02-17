@@ -122,6 +122,21 @@ func (c Client) GetTimeline(ttype string) []*ma.Status {
 	return timeline
 }
 
+func (c Client) Follow(accountId ma.ID) {
+	_, err := c.m.AccountFollow(context.TODO(), accountId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+func (c Client) Unfollow(accountId ma.ID) {
+	_, err := c.m.AccountUnfollow(context.TODO(), accountId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
 func (c Client) Toot(content string) *ma.Status {
 	toot := &ma.Toot{
 		Status: content,

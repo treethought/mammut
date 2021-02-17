@@ -30,6 +30,8 @@ Copy mammut.example.yaml and replace it with your own acocunt info. The client I
 | b     | Boost toot                             |
 | d     | Delete a toot you published            |
 | t     | Compose a new toot                     |
+| f     | Follow account                         |
+| u     | Unfollow account                       |
 | Enter | Select item (view toot context)        |
 
 
