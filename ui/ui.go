@@ -23,6 +23,7 @@ type App struct {
 	panels       *cview.Panels
 	compose      *ComposeModal
 	focusManager *cview.FocusManager
+	reply        *ReplyForm
 }
 
 func New() *App {
@@ -47,6 +48,9 @@ func (app *App) FocusTimeline() {
 func (app *App) SetStatus(toot *Toot) {
 	if app.statusView != nil {
 		app.statusView.SetStatus(toot)
+	}
+	if app.reply != nil {
+		app.reply.SetStatus(toot.status)
 	}
 
 	// app.Notify(fmt.Sprintf("Viewing status by: %s", toot.status.Account.DisplayName))
@@ -106,6 +110,7 @@ func (app *App) initViews() {
 	app.info.SetBackgroundColor(tcell.ColorDefault)
 
 	app.compose = NewComposeModal(app)
+	app.reply = NewReplyForm(app)
 
 	panels := cview.NewPanels()
 	panels.AddPanel("timeline", app.timeline, true, true)
@@ -119,7 +124,7 @@ func (app *App) initViews() {
 	mid.SetDirection(cview.FlexRow)
 	mid.AddItem(app.panels, 0, 4, true)
 	mid.AddItem(app.statusView, 0, 4, false)
-	// mid.AddItem(app.info, 0, 1, false)
+	mid.AddItem(app.reply, 0, 1, false)
 
 	flex := cview.NewFlex()
 	flex.SetBackgroundTransparent(false)
@@ -138,6 +143,9 @@ func (app *App) initViews() {
 }
 
 func (app *App) handleCompose(ev *tcell.EventKey) *tcell.EventKey {
+	if app.reply.HasFocus() {
+		return ev
+	}
 	current, _ := app.panels.GetFrontPanel()
 	if current == "compose" {
 		return ev
@@ -147,6 +155,10 @@ func (app *App) handleCompose(ev *tcell.EventKey) *tcell.EventKey {
 }
 
 func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
+	if app.reply.HasFocus() {
+		return ev
+	}
+
 	current, _ := app.panels.GetFrontPanel()
 	if current == "compose" {
 		return ev
@@ -156,10 +168,20 @@ func (app *App) handleToggle(ev *tcell.EventKey) *tcell.EventKey {
 
 }
 
+func (app *App) handleComment(ev *tcell.EventKey) *tcell.EventKey {
+	if app.reply.HasFocus() {
+		return ev
+	}
+	app.ui.SetFocus(app.reply)
+	return nil
+}
+
 func (app *App) initBindings() {
 	c := cbind.NewConfiguration()
 
 	c.SetRune(tcell.ModNone, 't', app.handleCompose)
+	c.SetRune(tcell.ModNone, 'c', app.handleComment)
+	c.SetRune(tcell.ModNone, 'i', app.handleComment)
 	c.SetKey(tcell.ModNone, tcell.KeyTAB, app.handleToggle)
 	app.ui.SetInputCapture(c.Capture)
 

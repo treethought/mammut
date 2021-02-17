@@ -32,6 +32,8 @@ Copy mammut.example.yaml and replace it with your own acocunt info. The client I
 | t     | Compose a new toot                     |
 | f     | Follow account                         |
 | u     | Unfollow account                       |
+| i     | Focus reply input                      |
+| c     | Focus reply input                      |
 | Enter | Select item (view toot context)        |
 
 

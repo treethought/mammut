@@ -148,6 +148,19 @@ func (c Client) Toot(content string) *ma.Status {
 	return status
 }
 
+func (c Client) Reply(status *ma.Status, content string) *ma.Status {
+	// content = fmt.Sprintf("@%s %s", status.Account.Acct, content)
+	toot := &ma.Toot{
+		Status:      content,
+		InReplyToID: status.ID,
+	}
+	status, err := c.m.PostStatus(context.TODO(), toot)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return status
+}
+
 func (c Client) Like(status *ma.Status) *ma.Status {
 	status, err := c.m.Favourite(context.TODO(), status.ID)
 	if err != nil {
