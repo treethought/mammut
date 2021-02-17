@@ -140,6 +140,16 @@ func (t *Timeline) handleLike(ev *tcell.EventKey) *tcell.EventKey {
 	t.app.FocusTimeline()
 	return nil
 }
+
+func (t *Timeline) handleBoost(ev *tcell.EventKey) *tcell.EventKey {
+	toot := t.GetCurrentToot()
+	status := toot.status
+	t.app.Notify("Boosting toot by %s", status.Account.Acct)
+	t.app.client.Boost(status)
+	t.app.FocusTimeline()
+	return nil
+}
+
 func (t *Timeline) handleOpen(ev *tcell.EventKey) *tcell.EventKey {
 	t.app.Notify("Opening in browser")
 	toot := t.GetCurrentToot()
@@ -158,6 +168,7 @@ func (t *Timeline) initBindings() {
 	t.inputHandler.SetRune(tcell.ModNone, 'o', t.handleOpen)
 	t.inputHandler.SetRune(tcell.ModNone, 'f', t.handleFollow)
 	t.inputHandler.SetRune(tcell.ModNone, 'u', t.handleUnfollow)
+	t.inputHandler.SetRune(tcell.ModNone, 'b', t.handleBoost)
 
 	t.SetInputCapture(t.inputHandler.Capture)
 

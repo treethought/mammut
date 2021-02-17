@@ -155,6 +155,13 @@ func (c Client) Like(status *ma.Status) *ma.Status {
 	}
 	return status
 }
+func (c Client) Boost(status *ma.Status) *ma.Status {
+	status, err := c.m.Reblog(context.TODO(), status.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return status
+}
 
 func (c Client) Unlike(status *ma.Status) *ma.Status {
 	status, err := c.m.Unfavourite(context.TODO(), status.ID)
